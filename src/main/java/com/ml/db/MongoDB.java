@@ -79,7 +79,6 @@ public class MongoDB implements IBaseDB {
 	@Override
 	public void delete(Query query, String collectionName) {
 		mongoTemplate.remove(query, collectionName);
-		mongoTemplate.dropCollection(collectionName);
 	}
 	
 	@Override
