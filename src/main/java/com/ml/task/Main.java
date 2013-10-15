@@ -49,7 +49,7 @@ public class Main {
 		
         // 从现在开始1分钟之后，每隔1小时执行一次job
 		ScheduledExecutorService scheduledService = Executors.newSingleThreadScheduledExecutor();
-		scheduledService.scheduleWithFixedDelay(ct, initialDelay, delay, TimeUnit.SECONDS);
+		scheduledService.scheduleWithFixedDelay(ct, initialDelay, delay, TimeUnit.MINUTES);
 
 	}
 
