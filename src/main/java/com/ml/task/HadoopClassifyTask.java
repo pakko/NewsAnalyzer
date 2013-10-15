@@ -1,12 +1,15 @@
 package com.ml.task;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.ml.db.MongoDB;
 import com.ml.model.News;
@@ -17,6 +20,7 @@ import com.ml.util.SSHUtil;
 import com.ml.util.ShortUrlUtil;
 
 public class HadoopClassifyTask extends ClassifyTask {
+	private static final Logger logger = LoggerFactory.getLogger(HadoopClassifyTask.class);
 
 	private String[] categoryIndex = new String[] {
 			"C000007", "C000008", "C000010", "C000013",
@@ -33,7 +37,7 @@ public class HadoopClassifyTask extends ClassifyTask {
 			long start = System.currentTimeMillis();
 			
 			long taskId = System.currentTimeMillis();
-			System.out.println("taskId：" + taskId + ", news size: " + newsList.size());
+			logger.info("taskId：" + taskId + ", news size: " + newsList.size());
 	
 			String newFileName = Constants.newFileName + taskId;
 			String newFileSeq = Constants.newFileSeq + taskId;
@@ -55,8 +59,9 @@ public class HadoopClassifyTask extends ClassifyTask {
 			ssh.scpUploadFile(Constants.defaultUploadDir, scriptPath, scriptPath);
 			
 			// 3) exec script and get the result
+			String destResultFile = Constants.tmpFileDir + newFileResultFile;
 			ssh.sshExec("chmod a+x " + Constants.defaultUploadDir + scriptPath + "; nohup sh " + Constants.defaultUploadDir + scriptPath);
-			ssh.scpDownloadFile(Constants.defaultUploadDir, newFileResultFile, newFileResultFile);
+			ssh.scpDownloadFile(Constants.defaultUploadDir, newFileResultFile, destResultFile);
 
 			// 4) do clean work
 			String cleanScript = this.generateCleanScripts(destCompressFilePath, scriptPath, 
@@ -65,21 +70,21 @@ public class HadoopClassifyTask extends ClassifyTask {
 			ssh.sshExec(cleanScript);
 			ssh.sshExit();
 			
-			String result = FileUtils.readFileToString(new File(newFileResultFile));
+			String result = FileUtils.readFileToString(new File(destResultFile));
 			processResult(newsList, result);
 			
-			FileUtils.forceDelete(new File(newFileName)); 
-			FileUtils.forceDelete(new File(destCompressFilePath)); 
-			FileUtils.forceDelete(new File(scriptPath)); 
-			FileUtils.forceDelete(new File(newFileResultFile)); 
-
 			long end = System.currentTimeMillis();
-			long time = (end - start)/1000;
+			long time = (end - start) / 1000;
+			logger.info("taskId：" + taskId + ", 耗时：" + time);
+
+			FileUtils.forceDelete(new File(destCompressFilePath)); 
+			FileUtils.forceDelete(new File(newFileName)); 
+			FileUtils.forceDelete(new File(scriptPath)); 
+			FileUtils.forceDelete(new File(destResultFile)); 
+
 			
-			System.out.println(" 耗时：" + time);
-			
-			
-			
+		} catch (FileNotFoundException e) {
+			//ignore it, for if code run in jar mode, file could not found
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -94,7 +99,7 @@ public class HadoopClassifyTask extends ClassifyTask {
 				continue;
 			resultMap.put(fields[1], Integer.parseInt(fields[3].split(":")[0].substring(1)));
 		}
-		System.out.println(resultMap.toString());
+		//System.out.println(resultMap.toString());
 		return resultMap;
 	}
 	
@@ -136,7 +141,7 @@ public class HadoopClassifyTask extends ClassifyTask {
 				+ " -m " + Constants.corpusFileModel + " -l " + Constants.corpusFileLabelIndex
 				+ " -i " + newFileTFIDFVectors + " -o " + newFileResult + Constants.scriptSeparator);
 		scriptSB.append("mahout seqdumper -i " + newFileResult + " -o " + Constants.defaultUploadDir + newFileResultFile + Constants.scriptSeparator);
-		System.out.println(scriptSB.toString());
+		//System.out.println(scriptSB.toString());
 		
 		// 3) upload script
 		String scriptPath = Constants.scriptPath + taskId;
@@ -163,7 +168,7 @@ public class HadoopClassifyTask extends ClassifyTask {
 	
 	private void processResult(List<News> newsList, String result) {
     	Map<String, Integer> resultMap = resolveResult(result);
-		System.out.println("news size " + newsList.size());
+		//System.out.println("news size " + newsList.size());
 		
 		for(News news: newsList) {
 			String key = ShortUrlUtil.shortText(news.getUrl())[0] + Constants.fileExt;

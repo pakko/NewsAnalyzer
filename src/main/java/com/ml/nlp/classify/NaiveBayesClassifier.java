@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -46,6 +47,15 @@ public class NaiveBayesClassifier {
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(
                     modelFile));
+            model = (TrainnedModel) in.readObject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+	
+	public final void loadModel(final InputStream is) {
+        try {
+            ObjectInputStream in = new ObjectInputStream(is);
             model = (TrainnedModel) in.readObject();
         } catch (Exception e) {
             e.printStackTrace();

@@ -34,7 +34,7 @@ public abstract class ClassifyTask implements Runnable {
 		List<News> newsList = mongodb.find(query, News.class, Constants.newsCollectionName);		
 		logger.info("Analyzing size: " + newsList.size());
 		
-		if(newsList.size() > 0) {
+		if(newsList.size() > Constants.minAnalyzerNum) {
 			analyze(newsList);
 
 			//delete it first, then save
@@ -42,6 +42,7 @@ public abstract class ClassifyTask implements Runnable {
 			mongodb.insert(newsList, Constants.newsCollectionName);
 			
 			logger.info("End of analyzing...");
+			System.out.println();
 			
 			//notify clustering
 			manager.fireWorkspaceCommand("take_cluster");

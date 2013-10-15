@@ -108,7 +108,7 @@ public class SSHUtil {
     	    		if(i < 0) break;
     	    		strBuffer.append(new String(tmp, 0, i));
     	        }
-    	    	System.out.println(strBuffer.toString());
+    	    	//System.out.println(strBuffer.toString());
     	    	if(channel.isClosed()){
     	        	int ec = channel.getExitStatus();
     	        	if (ec != 0) {
@@ -119,7 +119,7 @@ public class SSHUtil {
     	                	break;
     	                }
     	        	}
-    	        	System.out.println("exit-status: " + channel.getExitStatus());
+    	        	//System.out.println("exit-status: " + channel.getExitStatus());
     	        	break;
     	        }
     	        try{Thread.sleep(1000); }catch(Exception ee){}

@@ -21,6 +21,8 @@ public class Main {
 		if(args.length > 0) {
 			confFile = args[0];
 		}
+		System.out.println(confFile);
+
 		Properties props = new Properties();
 		props.load(new FileInputStream(confFile));
 		MongoDB mongodb = new MongoDB(props);
@@ -38,7 +40,7 @@ public class Main {
 		ClassifyTask ct = null;
 		if(isSequential == 1) {
 			NaiveBayesClassifier classifier = new MultiNomialNB();
-	    	classifier.loadModel(Constants.defaultMultinomialModelFile);
+			classifier.loadModel(Main.class.getResourceAsStream(Constants.defaultMultinomialModelFile));
 			ct = new DefaultClassifyTask(mongodb, manager, classifier);
 		}
 		else {
