@@ -1,6 +1,7 @@
 package com.ml.task;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,6 +165,8 @@ public class HadoopClusterTask implements Runnable {
 			FileUtils.forceDelete(new File(destCompressFilePath)); 
 			FileUtils.forceDelete(new File(scriptPath));
 			
+		} catch (FileNotFoundException e) {
+			//ignore it, for if code run in jar mode, file could not found
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
