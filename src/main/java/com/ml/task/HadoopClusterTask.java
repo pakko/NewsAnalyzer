@@ -1,7 +1,6 @@
 package com.ml.task;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +67,8 @@ public class HadoopClusterTask implements Runnable {
 		//2, cluster news
 		String resultFile = doCluster(newsList);
 		//System.out.println("result file: " + resultFile);
+		if(resultFile == null)
+			return;
 		
 		//3, parse result
 		Map<Integer, List<String>> resultMap = resolveResult(resultFile);
@@ -161,17 +162,12 @@ public class HadoopClusterTask implements Runnable {
 			
 			FileUtils.forceDelete(new File(newFileName)); 
 			FileUtils.forceDelete(new File(destCompressFilePath)); 
-			FileUtils.forceDelete(new File(scriptPath)); 
+			FileUtils.forceDelete(new File(scriptPath));
 			
-			return destClusterResult;
-			
-		} catch (FileNotFoundException e) {
-			//ignore it, for if code run in jar mode, file could not found
-			return destClusterResult;
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		return null;
+		return destClusterResult;
 	}
 	
 	private Map<Integer, List<String>> resolveResult(String resultFile) {
